@@ -684,21 +684,21 @@
                     // Atualizar estatísticas ANTES de fechar o modal
                     await carregarEstatisticas();
                     
-                    // Atualizar modal se estiver aberto (ANTES de fechar)
-                    const modal = document.getElementById('modalSubgrupos');
-                    if (modal.style.display === 'block') {
-                        console.log('Atualizando modal após inscrição...');
-                        
-                        // Forçar recriação completa do modal imediatamente
-                        abrirModalSubgrupos(grupoSelecionado);
-                        
-                        // Aguardar um pouco para ver a atualização
-                        await new Promise(resolve => setTimeout(resolve, 500));
-                    }
-                    
+                    // Fechar modal imediatamente
                     fecharModal();
+                    
+                    // Mostrar sucesso e voltar para etapa 1 imediatamente
                     mostrarSucesso(subgrupoSelecionado);
                     atualizarDisponibilidadeGrupos();
+                    
+                    // Voltar para etapa 1 imediatamente (sem delay)
+                    setTimeout(() => {
+                        mostrarEtapa(1);
+                        document.getElementById('nome').value = '';
+                        document.getElementById('successMessage').style.display = 'none';
+                        nomeAtual = '';
+                        grupoSelecionado = '';
+                    }, 1000); // Reduzido para 1 segundo
                 }
             } catch (error) {
                 console.error('Erro ao salvar:', error);
@@ -864,14 +864,14 @@
             successMessage.style.display = 'block';
             document.getElementById('errorMessage').style.display = 'none';
 
-            // Limpar formulário
+            // Limpar formulário (reduzido para 2 segundos)
             setTimeout(() => {
                 mostrarEtapa(1);
                 document.getElementById('nome').value = '';
                 successMessage.style.display = 'none';
                 nomeAtual = '';
                 grupoSelecionado = '';
-            }, 5000);
+            }, 2000);
         }
 
         function mostrarErro(mensagem) {
