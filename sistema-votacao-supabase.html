@@ -594,6 +594,7 @@
             `;
             subgroupOptions.appendChild(grupoInfo);
 
+            // Aplicar a mesma lógica do arquivo de teste que funciona perfeitamente
             for (let i = 1; i <= 5; i++) {
                 const subgrupo = `${grupo}${i}`;
                 const votosSubgrupo = estatisticas.subgrupos[subgrupo] || 0;
@@ -749,12 +750,18 @@
                 // Estatísticas por subgrupo
                 estatisticas.subgrupos = {};
                 for (let i = 1; i <= 5; i++) {
-                    estatisticas.subgrupos[`A${i}`] = inscricoes.filter(i => i.subgrupo === `A${i}`).length;
-                    estatisticas.subgrupos[`B${i}`] = inscricoes.filter(i => i.subgrupo === `B${i}`).length;
+                    const subgrupoA = `A${i}`;
+                    const subgrupoB = `B${i}`;
+                    
+                    estatisticas.subgrupos[subgrupoA] = inscricoes.filter(insc => insc.subgrupo === subgrupoA).length;
+                    estatisticas.subgrupos[subgrupoB] = inscricoes.filter(insc => insc.subgrupo === subgrupoB).length;
+                    
+                    console.log(`${subgrupoA}: ${estatisticas.subgrupos[subgrupoA]}/9`);
+                    console.log(`${subgrupoB}: ${estatisticas.subgrupos[subgrupoB]}/9`);
                 }
 
-                console.log('Dados brutos:', inscricoes);
-                console.log('Subgrupos calculados:', estatisticas.subgrupos);
+                console.log('📊 Dados brutos:', inscricoes);
+                console.log('📊 Subgrupos calculados:', estatisticas.subgrupos);
 
                 // Atualizar interface
                 document.getElementById('statsGrupoA').textContent = `${estatisticas.grupoA}/45`;
@@ -828,7 +835,7 @@
                 `;
             }
 
-            // Atualizar contadores dos botões
+            // Aplicar a mesma lógica do arquivo de teste para atualização
             const botoes = subgroupOptions.querySelectorAll('.subgroup-btn');
             console.log('Encontrados', botoes.length, 'botões para atualizar');
             
@@ -844,8 +851,8 @@
                 if (disponivel) {
                     btn.innerHTML = `
                         <strong>${subgrupo}</strong><br>
-                        <span style="font-size: 1.1em; color: #2c3e50;">${votosSubgrupo}/9</span><br>
-                        <small style="color: #27ae60;">${vagasRestantes} vagas</small>
+                        <span style="font-size: 1.2em; color: #2c3e50; font-weight: bold;">${votosSubgrupo}/9</span><br>
+                        <span style="font-size: 0.9em; color: #27ae60; font-weight: bold;">${vagasRestantes} vagas restantes</span>
                     `;
                     btn.className = 'subgroup-btn';
                     btn.onclick = () => {
@@ -856,8 +863,8 @@
                 } else {
                     btn.innerHTML = `
                         <strong>${subgrupo}</strong><br>
-                        <span style="font-size: 1.1em; color: #e74c3c;">9/9</span><br>
-                        <small style="color: #e74c3c;">LOTADO</small>
+                        <span style="font-size: 1.2em; color: #e74c3c; font-weight: bold;">9/9</span><br>
+                        <span style="font-size: 0.9em; color: #e74c3c; font-weight: bold;">LOTADO</span>
                     `;
                     btn.className = 'subgroup-btn disabled';
                     btn.onclick = null;

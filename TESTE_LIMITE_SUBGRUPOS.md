@@ -24,18 +24,24 @@ O sistema já possui **controle completo** do limite de 9 inscritos por subgrupo
 3. **Observe os botões** - devem mostrar "X/9" e "X vagas restantes"
 4. **Verifique cores** - verde para disponível, vermelho para lotado
 
-### Teste 2: Simulação de Lotado
+### Teste 2: Arquivo de Teste Local
+1. **Abra o arquivo** `teste-cores-subgrupos.html` no navegador
+2. **Clique nos botões** para adicionar inscrições
+3. **Observe** como as cores mudam conforme os subgrupos lotam
+4. **Teste o botão** "🧪 Testar Lotado" para ver A1 ficar vermelho
+
+### Teste 3: Simulação de Lotado
 1. **Abra o console** do navegador (F12)
 2. **Inscreva 9 pessoas** no mesmo subgrupo (ex: A1)
 3. **Verifique** que o botão A1 fica vermelho e mostra "9/9 LOTADO"
 4. **Tente clicar** no botão - não deve funcionar
 
-### Teste 3: Verificação de Bloqueio
+### Teste 4: Verificação de Bloqueio
 1. **Tente inscrever** uma 10ª pessoa no subgrupo lotado
 2. **Deve aparecer**: "Este subgrupo está lotado. Escolha outro."
 3. **Verifique logs** no console para confirmar o bloqueio
 
-### Teste 4: Atualização em Tempo Real
+### Teste 5: Atualização em Tempo Real
 1. **Abra duas abas** do sistema
 2. **Na primeira aba**, inscreva pessoas até lotar um subgrupo
 3. **Na segunda aba**, verifique se o subgrupo aparece lotado automaticamente
