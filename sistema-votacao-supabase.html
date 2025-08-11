@@ -458,10 +458,10 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Configurar Supabase com credenciais fixas
             // IMPORTANTE: Substitua pelas suas credenciais do Supabase
-            const SUPABASE_URL = 'SUA_URL_DO_SUPABASE_AQUI';
-            const SUPABASE_KEY = 'SUA_CHAVE_ANONIMA_AQUI';
+            const SUPABASE_URL = 'https://qnudgptwmofwdckqdsoh.supabase.co';
+            const SUPABASE_KEY = 'sb_publishable_vJMQbVYo3TEbni8bGuAMIA_kASPXUaS';
             
-            if (SUPABASE_URL && SUPABASE_KEY && SUPABASE_URL !== 'SUA_URL_DO_SUPABASE_AQUI') {
+            if (SUPABASE_URL && SUPABASE_KEY && SUPABASE_URL !== 'https://your-project.supabase.co') {
                 try {
                     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                     console.log('Supabase configurado com sucesso');
