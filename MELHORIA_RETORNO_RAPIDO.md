@@ -13,6 +13,7 @@
 - ✅ **Limpa o formulário** automaticamente
 - ✅ **Reseta as variáveis** (nomeAtual, grupoSelecionado)
 - ✅ **Fecha o modal** imediatamente
+- ✅ **Previne reabertura** do modal durante salvamento
 
 ### 2. **Tempo Reduzido**
 - ✅ **Mensagem de sucesso**: 2 segundos (era 5 segundos)
@@ -30,8 +31,9 @@
 // Agora:
 1. Salvar voto
 2. Fechar modal imediatamente
-3. Mostrar sucesso por 1 segundo
-4. Voltar para etapa 1 automaticamente
+3. Atualizar estatísticas (sem reabrir modal)
+4. Mostrar sucesso por 1 segundo
+5. Voltar para etapa 1 automaticamente
 ```
 
 ## 🎯 Benefícios
@@ -78,6 +80,15 @@
 
 ### Função `selecionarSubgrupo`:
 ```javascript
+// Marcar que estamos salvando
+salvandoInscricao = true;
+
+// Fechar modal ANTES de atualizar estatísticas
+fecharModal();
+
+// Atualizar estatísticas (sem reabrir modal)
+await carregarEstatisticas();
+
 // Voltar para etapa 1 imediatamente (sem delay)
 setTimeout(() => {
     mostrarEtapa(1);
@@ -85,6 +96,7 @@ setTimeout(() => {
     document.getElementById('successMessage').style.display = 'none';
     nomeAtual = '';
     grupoSelecionado = '';
+    salvandoInscricao = false; // Resetar flag
 }, 1000); // Reduzido para 1 segundo
 ```
 

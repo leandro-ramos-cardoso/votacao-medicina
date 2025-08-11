@@ -453,6 +453,7 @@
         let grupoSelecionado = '';
         let estatisticas = { grupoA: 0, grupoB: 0, subgrupos: {} };
         let inscricoes = [];
+        let salvandoInscricao = false;
 
                 // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
@@ -658,6 +659,9 @@
                 return;
             }
 
+            // Marcar que estamos salvando
+            salvandoInscricao = true;
+
             // Mostrar loading
             const loading = document.getElementById('loading');
             loading.style.display = 'block';
@@ -681,11 +685,11 @@
                         mostrarErro('Erro ao salvar inscrição: ' + error.message);
                     }
                 } else {
-                    // Atualizar estatísticas ANTES de fechar o modal
-                    await carregarEstatisticas();
-                    
-                    // Fechar modal imediatamente
+                    // Fechar modal ANTES de atualizar estatísticas
                     fecharModal();
+                    
+                    // Atualizar estatísticas (sem reabrir modal)
+                    await carregarEstatisticas();
                     
                     // Mostrar sucesso e voltar para etapa 1 imediatamente
                     mostrarSucesso(subgrupoSelecionado);
@@ -698,13 +702,16 @@
                         document.getElementById('successMessage').style.display = 'none';
                         nomeAtual = '';
                         grupoSelecionado = '';
+                        salvandoInscricao = false; // Resetar flag
                     }, 1000); // Reduzido para 1 segundo
                 }
             } catch (error) {
                 console.error('Erro ao salvar:', error);
                 mostrarErro('Erro de conexão. Tente novamente.');
+                salvandoInscricao = false; // Resetar flag em caso de erro
             } finally {
                 loading.style.display = 'none';
+                salvandoInscricao = false; // Resetar flag
             }
         }
 
@@ -747,9 +754,9 @@
                 // Atualizar disponibilidade dos grupos
                 atualizarDisponibilidadeGrupos();
 
-                // Atualizar modal se estiver aberto
+                // Atualizar modal se estiver aberto (mas não durante salvamento)
                 const modal = document.getElementById('modalSubgrupos');
-                if (modal.style.display === 'block' && grupoSelecionado) {
+                if (modal.style.display === 'block' && grupoSelecionado && !salvandoInscricao) {
                     console.log('🔄 Atualizando modal automaticamente...');
                     // Forçar recriação completa do modal
                     setTimeout(() => {
