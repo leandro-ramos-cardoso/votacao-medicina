@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Atualização Contadores</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug-panel { background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0; }
+        .btn { background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #5a6fd8; }
+        .subgroup-btn {
+            background: #ecf0f1;
+            border: 2px solid #bdc3c7;
+            border-radius: 10px;
+            padding: 20px 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: #2c3e50;
+            text-align: center;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 10px;
+        }
+        .subgroup-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .log { background: #f1f1f1; padding: 10px; border-radius: 5px; max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>🐛 Debug Atualização de Contadores</h1>
+    
+    <div class="debug-panel">
+        <h3>Controles de Teste</h3>
+        <button class="btn" onclick="simularInscricao('A1')">➕ Inscrição A1</button>
+        <button class="btn" onclick="simularInscricao('A2')">➕ Inscrição A2</button>
+        <button class="btn" onclick="resetarDados()">🔄 Resetar</button>
+        <button class="btn" onclick="atualizarInterface()">🔄 Atualizar Interface</button>
+        <button class="btn" onclick="testarModal()">📋 Testar Modal</button>
+    </div>
+
+    <div class="debug-panel">
+        <h3>Dados Atuais</h3>
+        <p><strong>Grupo A:</strong> <span id="totalGrupoA">0</span>/45</p>
+        <p><strong>Subgrupos:</strong> <span id="dadosSubgrupos">A1: 0, A2: 0, A3: 0, A4: 0, A5: 0</span></p>
+        <p><strong>Última atualização:</strong> <span id="ultimaAtualizacao">Nunca</span></p>
+    </div>
+
+    <div class="debug-panel">
+        <h3>Modal de Teste</h3>
+        <button class="btn" onclick="abrirModalTeste()">Abrir Modal</button>
+        <div id="modalTeste" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.3); z-index: 1000;">
+            <h3 id="modalTitle">Escolha um subgrupo</h3>
+            <div id="subgroupOptions" class="subgroup-options"></div>
+            <button class="btn" onclick="fecharModalTeste()">Fechar</button>
+        </div>
+    </div>
+    
+    <div class="debug-panel">
+        <h3>Logs de Debug</h3>
+        <div id="logs" class="log"></div>
+    </div>
+
+    <script>
+        // Simular dados
+        let estatisticas = {
+            grupoA: 0,
+            grupoB: 0,
+            subgrupos: {
+                'A1': 0, 'A2': 0, 'A3': 0, 'A4': 0, 'A5': 0,
+                'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0
+            }
+        };
+
+        function log(mensagem) {
+            const logs = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            logs.innerHTML += `[${timestamp}] ${mensagem}\n`;
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function atualizarInterface() {
+            log('🔄 Atualizando interface...');
+            
+            // Atualizar painel de dados
+            document.getElementById('totalGrupoA').textContent = estatisticas.grupoA;
+            document.getElementById('ultimaAtualizacao').textContent = new Date().toLocaleTimeString();
+            
+            const subgruposText = Object.entries(estatisticas.subgrupos)
+                .filter(([key]) => key.startsWith('A'))
+                .map(([key, value]) => `${key}: ${value}`)
+                .join(', ');
+            document.getElementById('dadosSubgrupos').textContent = subgruposText;
+
+            log('✅ Interface atualizada');
+        }
+
+        function simularInscricao(subgrupo) {
+            if (estatisticas.subgrupos[subgrupo] < 9) {
+                estatisticas.subgrupos[subgrupo]++;
+                estatisticas.grupoA = Object.entries(estatisticas.subgrupos)
+                    .filter(([key]) => key.startsWith('A'))
+                    .reduce((sum, [key, value]) => sum + value, 0);
+                
+                log(`✅ Inscrição adicionada em ${subgrupo}. Total: ${estatisticas.subgrupos[subgrupo]}/9`);
+                atualizarInterface();
+            } else {
+                log(`❌ ${subgrupo} está lotado!`);
+            }
+        }
+
+        function resetarDados() {
+            estatisticas = {
+                grupoA: 0,
+                grupoB: 0,
+                subgrupos: {
+                    'A1': 0, 'A2': 0, 'A3': 0, 'A4': 0, 'A5': 0,
+                    'B1': 0, 'B2': 0, 'B3': 0, 'B4': 0, 'B5': 0
+                }
+            };
+            log('🔄 Dados resetados');
+            atualizarInterface();
+        }
+
+        function abrirModalTeste() {
+            log('📋 Abrindo modal de teste...');
+            
+            const modal = document.getElementById('modalTeste');
+            const modalTitle = document.getElementById('modalTitle');
+            const subgroupOptions = document.getElementById('subgroupOptions');
+
+            const votosGrupo = estatisticas.grupoA;
+            modalTitle.textContent = `Escolha um subgrupo do Grupo A (${votosGrupo}/45)`;
+            subgroupOptions.innerHTML = '';
+
+            // Adicionar informações do grupo
+            const grupoInfo = document.createElement('div');
+            grupoInfo.style.cssText = 'background: #e8f5e8; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center;';
+            grupoInfo.innerHTML = `
+                <strong>Grupo A:</strong> ${votosGrupo}/45 inscrições 
+                <br><small>${45 - votosGrupo} vagas restantes</small>
+            `;
+            subgroupOptions.appendChild(grupoInfo);
+
+            // Criar botões dos subgrupos
+            for (let i = 1; i <= 5; i++) {
+                const subgrupo = `A${i}`;
+                const votosSubgrupo = estatisticas.subgrupos[subgrupo] || 0;
+                const disponivel = votosSubgrupo < 9;
+                const vagasRestantes = 9 - votosSubgrupo;
+
+                log(`Criando botão ${subgrupo}: ${votosSubgrupo}/9`);
+
+                const btn = document.createElement('button');
+                btn.className = `subgroup-btn ${disponivel ? '' : 'disabled'}`;
+                
+                if (disponivel) {
+                    btn.innerHTML = `
+                        <strong>${subgrupo}</strong><br>
+                        <span style="font-size: 1.1em; color: #2c3e50;">${votosSubgrupo}/9</span><br>
+                        <small style="color: #27ae60;">${vagasRestantes} vagas</small>
+                    `;
+                    btn.onclick = () => {
+                        log(`🎯 Clicou em ${subgrupo}`);
+                        simularInscricao(subgrupo);
+                        abrirModalTeste(); // Recriar modal
+                    };
+                } else {
+                    btn.innerHTML = `
+                        <strong>${subgrupo}</strong><br>
+                        <span style="font-size: 1.1em; color: #e74c3c;">9/9</span><br>
+                        <small style="color: #e74c3c;">LOTADO</small>
+                    `;
+                    btn.onclick = null;
+                }
+
+                subgroupOptions.appendChild(btn);
+            }
+
+            modal.style.display = 'block';
+            log('✅ Modal aberto');
+        }
+
+        function fecharModalTeste() {
+            document.getElementById('modalTeste').style.display = 'none';
+            log('❌ Modal fechado');
+        }
+
+        function testarModal() {
+            log('🧪 Testando modal...');
+            abrirModalTeste();
+        }
+
+        // Inicializar
+        log('🚀 Debug iniciado');
+        atualizarInterface();
+    </script>
+</body>
+</html> 

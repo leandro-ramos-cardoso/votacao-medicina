@@ -681,6 +681,18 @@
 
             modal.style.display = 'block';
             
+            // Adicionar botão de teste para atualização manual
+            const testButton = document.createElement('button');
+            testButton.textContent = '🔄 Atualizar Contadores';
+            testButton.style.cssText = 'background: #667eea; color: white; border: none; padding: 10px; border-radius: 5px; margin-top: 10px; cursor: pointer;';
+            testButton.onclick = () => {
+                console.log('🔄 Atualização manual solicitada');
+                carregarEstatisticas().then(() => {
+                    abrirModalSubgrupos(grupo);
+                });
+            };
+            subgroupOptions.appendChild(testButton);
+            
             // Debug: mostrar estatísticas no console
             console.log(`Modal aberto para Grupo ${grupo}:`, {
                 grupo: votosGrupo,
@@ -730,19 +742,23 @@
                         mostrarErro('Erro ao salvar inscrição: ' + error.message);
                     }
                 } else {
-                    fecharModal();
-                    mostrarSucesso(subgrupoSelecionado);
-                    
-                    // Atualizar estatísticas imediatamente
+                    // Atualizar estatísticas ANTES de fechar o modal
                     await carregarEstatisticas();
                     
-                    // Forçar atualização do modal se estiver aberto
+                    // Atualizar modal se estiver aberto (ANTES de fechar)
                     const modal = document.getElementById('modalSubgrupos');
                     if (modal.style.display === 'block') {
                         console.log('Atualizando modal após inscrição...');
-                        atualizarContadoresModal();
+                        
+                        // Forçar recriação completa do modal
+                        abrirModalSubgrupos(grupoSelecionado);
+                        
+                        // Aguardar um pouco para ver a atualização
+                        await new Promise(resolve => setTimeout(resolve, 1000));
                     }
                     
+                    fecharModal();
+                    mostrarSucesso(subgrupoSelecionado);
                     atualizarDisponibilidadeGrupos();
                 }
             } catch (error) {
@@ -823,8 +839,14 @@
         }
 
         function atualizarContadoresModal() {
+            console.log('🔧 Iniciando atualização do modal...');
+            console.log('Grupo selecionado:', grupoSelecionado);
+            console.log('Estatísticas atuais:', estatisticas);
+            
             const subgroupOptions = document.getElementById('subgroupOptions');
             const votosGrupo = grupoSelecionado === 'A' ? estatisticas.grupoA : estatisticas.grupoB;
+            
+            console.log('Votos do grupo:', votosGrupo);
             
             // Atualizar título
             const modalTitle = document.getElementById('modalTitle');
@@ -841,6 +863,8 @@
 
             // Atualizar contadores dos botões
             const botoes = subgroupOptions.querySelectorAll('.subgroup-btn');
+            console.log('Encontrados', botoes.length, 'botões para atualizar');
+            
             botoes.forEach((btn, index) => {
                 const i = index + 1;
                 const subgrupo = `${grupoSelecionado}${i}`;
@@ -848,7 +872,7 @@
                 const disponivel = votosSubgrupo < 9;
                 const vagasRestantes = 9 - votosSubgrupo;
 
-                console.log(`Atualizando botão ${subgrupo}: ${votosSubgrupo}/9`);
+                console.log(`🔄 Atualizando botão ${subgrupo}: ${votosSubgrupo}/9 (${vagasRestantes} vagas)`);
 
                 if (disponivel) {
                     btn.innerHTML = `
@@ -868,6 +892,8 @@
                     btn.onclick = null;
                 }
             });
+            
+            console.log('✅ Atualização do modal concluída');
         }
 
         function mostrarSucesso(mensagem) {
