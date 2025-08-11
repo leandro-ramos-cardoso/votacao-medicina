@@ -449,6 +449,7 @@
                     <div class="stat-value" id="statsGrupoB">0/45</div>
                 </div>
             </div>
+            <button class="btn btn-secondary" onclick="carregarEstatisticas()" style="margin-top: 10px;">🔄 Atualizar Estatísticas</button>
         </div>
 
         <!-- Seção de Exportação -->
@@ -482,6 +483,13 @@
                 document.getElementById('supabaseKey').value = savedKey;
                 configurarSupabase();
             }
+
+            // Atualizar estatísticas automaticamente a cada 30 segundos
+            setInterval(() => {
+                if (supabase) {
+                    carregarEstatisticas();
+                }
+            }, 30000);
         });
 
         function configurarSupabase() {
@@ -580,7 +588,9 @@
 
         function selecionarGrupo(grupo) {
             const grupoElement = document.getElementById(`grupo${grupo}`);
-            if (grupoElement.classList.contains('disabled')) {
+            const votosGrupo = grupo === 'A' ? estatisticas.grupoA : estatisticas.grupoB;
+            
+            if (grupoElement.classList.contains('disabled') || votosGrupo >= 45) {
                 mostrarErro('Este grupo está lotado. Escolha outro grupo.');
                 return;
             }
@@ -596,6 +606,15 @@
 
             modalTitle.textContent = `Escolha um subgrupo do Grupo ${grupo}`;
             subgroupOptions.innerHTML = '';
+
+            // Verificar se o grupo está lotado
+            const votosGrupo = grupo === 'A' ? estatisticas.grupoA : estatisticas.grupoB;
+            if (votosGrupo >= 45) {
+                modalTitle.textContent = `Grupo ${grupo} está lotado (${votosGrupo}/45)`;
+                subgroupOptions.innerHTML = '<p style="text-align: center; color: #e74c3c;">Este grupo atingiu o limite máximo de 45 inscrições.</p>';
+                modal.style.display = 'block';
+                return;
+            }
 
             for (let i = 1; i <= 5; i++) {
                 const subgrupo = `${grupo}${i}`;
@@ -618,9 +637,17 @@
         }
 
         async function selecionarSubgrupo(subgrupoSelecionado) {
+            // Verificar limite ANTES de salvar
             const votosSubgrupo = estatisticas.subgrupos[subgrupoSelecionado] || 0;
             if (votosSubgrupo >= 9) {
                 mostrarErro('Este subgrupo está lotado. Escolha outro.');
+                return;
+            }
+
+            // Verificar limite do grupo
+            const votosGrupo = grupoSelecionado === 'A' ? estatisticas.grupoA : estatisticas.grupoB;
+            if (votosGrupo >= 45) {
+                mostrarErro('Este grupo está lotado. Escolha outro grupo.');
                 return;
             }
 
@@ -687,10 +714,16 @@
                     estatisticas.subgrupos[`B${i}`] = inscricoes.filter(i => i.subgrupo === `B${i}`).length;
                 }
 
+                // Atualizar interface
                 document.getElementById('statsGrupoA').textContent = `${estatisticas.grupoA}/45`;
                 document.getElementById('statsGrupoB').textContent = `${estatisticas.grupoB}/45`;
 
                 document.getElementById('stats').style.display = 'block';
+
+                // Atualizar disponibilidade dos grupos
+                atualizarDisponibilidadeGrupos();
+
+                console.log('Estatísticas atualizadas:', estatisticas);
             } catch (error) {
                 console.error('Erro ao carregar estatísticas:', error);
             }
@@ -710,6 +743,12 @@
                 grupoB.classList.add('disabled');
             } else {
                 grupoB.classList.remove('disabled');
+            }
+
+            // Atualizar modal se estiver aberto
+            const modal = document.getElementById('modalSubgrupos');
+            if (modal.style.display === 'block') {
+                abrirModalSubgrupos(grupoSelecionado);
             }
         }
 
