@@ -648,19 +648,23 @@
                 const disponivel = votosSubgrupo < 9;
                 const vagasRestantes = 9 - votosSubgrupo;
 
+                console.log(`Criando botão ${subgrupo}: ${votosSubgrupo}/9`);
+
                 const btn = document.createElement('button');
                 btn.className = `subgroup-btn ${disponivel ? '' : 'disabled'}`;
                 
                 if (disponivel) {
                     btn.innerHTML = `
                         <strong>${subgrupo}</strong><br>
-                        <span style="font-size: 0.9em;">${votosSubgrupo}/9 (${vagasRestantes} vagas)</span>
+                        <span style="font-size: 1.1em; color: #2c3e50;">${votosSubgrupo}/9</span><br>
+                        <small style="color: #27ae60;">${vagasRestantes} vagas</small>
                     `;
                     btn.onclick = () => selecionarSubgrupo(subgrupo);
                 } else {
                     btn.innerHTML = `
                         <strong>${subgrupo}</strong><br>
-                        <span style="font-size: 0.9em; color: #e74c3c;">LOTADO (9/9)</span>
+                        <span style="font-size: 1.1em; color: #e74c3c;">9/9</span><br>
+                        <small style="color: #e74c3c;">LOTADO</small>
                     `;
                     btn.onclick = null;
                 }
@@ -758,6 +762,9 @@
                     estatisticas.subgrupos[`A${i}`] = inscricoes.filter(i => i.subgrupo === `A${i}`).length;
                     estatisticas.subgrupos[`B${i}`] = inscricoes.filter(i => i.subgrupo === `B${i}`).length;
                 }
+
+                console.log('Dados brutos:', inscricoes);
+                console.log('Subgrupos calculados:', estatisticas.subgrupos);
 
                 // Atualizar interface
                 document.getElementById('statsGrupoA').textContent = `${estatisticas.grupoA}/45`;
