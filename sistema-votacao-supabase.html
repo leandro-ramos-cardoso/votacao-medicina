@@ -216,11 +216,17 @@
             background: #ecf0f1;
             border: 2px solid #bdc3c7;
             border-radius: 10px;
-            padding: 15px;
+            padding: 20px 15px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: 600;
             color: #2c3e50;
+            text-align: center;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
         .subgroup-btn:hover {
@@ -484,12 +490,19 @@
                 configurarSupabase();
             }
 
-            // Atualizar estatísticas automaticamente a cada 30 segundos
-            setInterval(() => {
-                if (supabase) {
-                    carregarEstatisticas();
-                }
-            }, 30000);
+                    // Atualizar estatísticas automaticamente a cada 30 segundos
+        setInterval(() => {
+            if (supabase) {
+                carregarEstatisticas();
+            }
+        }, 30000);
+
+        // Atualizar estatísticas quando a página ganha foco
+        window.addEventListener('focus', () => {
+            if (supabase) {
+                carregarEstatisticas();
+            }
+        });
         });
 
         function configurarSupabase() {
@@ -586,7 +599,7 @@
             document.getElementById(`step${numero}`).classList.add('active');
         }
 
-        function selecionarGrupo(grupo) {
+        async function selecionarGrupo(grupo) {
             const grupoElement = document.getElementById(`grupo${grupo}`);
             const votosGrupo = grupo === 'A' ? estatisticas.grupoA : estatisticas.grupoB;
             
@@ -596,6 +609,9 @@
             }
 
             grupoSelecionado = grupo;
+            
+            // Carregar estatísticas atualizadas antes de abrir o modal
+            await carregarEstatisticas();
             abrirModalSubgrupos(grupo);
         }
 
@@ -604,32 +620,61 @@
             const modalTitle = document.getElementById('modalTitle');
             const subgroupOptions = document.getElementById('subgroupOptions');
 
-            modalTitle.textContent = `Escolha um subgrupo do Grupo ${grupo}`;
-            subgroupOptions.innerHTML = '';
-
             // Verificar se o grupo está lotado
             const votosGrupo = grupo === 'A' ? estatisticas.grupoA : estatisticas.grupoB;
+            
+            modalTitle.textContent = `Escolha um subgrupo do Grupo ${grupo} (${votosGrupo}/45)`;
+            subgroupOptions.innerHTML = '';
+
             if (votosGrupo >= 45) {
                 modalTitle.textContent = `Grupo ${grupo} está lotado (${votosGrupo}/45)`;
-                subgroupOptions.innerHTML = '<p style="text-align: center; color: #e74c3c;">Este grupo atingiu o limite máximo de 45 inscrições.</p>';
+                subgroupOptions.innerHTML = '<p style="text-align: center; color: #e74c3c; font-weight: bold;">Este grupo atingiu o limite máximo de 45 inscrições.</p>';
                 modal.style.display = 'block';
                 return;
             }
+
+            // Adicionar informações do grupo
+            const grupoInfo = document.createElement('div');
+            grupoInfo.style.cssText = 'background: #e8f5e8; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center;';
+            grupoInfo.innerHTML = `
+                <strong>Grupo ${grupo}:</strong> ${votosGrupo}/45 inscrições 
+                <br><small>${45 - votosGrupo} vagas restantes</small>
+            `;
+            subgroupOptions.appendChild(grupoInfo);
 
             for (let i = 1; i <= 5; i++) {
                 const subgrupo = `${grupo}${i}`;
                 const votosSubgrupo = estatisticas.subgrupos[subgrupo] || 0;
                 const disponivel = votosSubgrupo < 9;
+                const vagasRestantes = 9 - votosSubgrupo;
 
                 const btn = document.createElement('button');
                 btn.className = `subgroup-btn ${disponivel ? '' : 'disabled'}`;
-                btn.textContent = `${subgrupo} (${votosSubgrupo}/9)`;
-                btn.onclick = disponivel ? () => selecionarSubgrupo(subgrupo) : null;
+                
+                if (disponivel) {
+                    btn.innerHTML = `
+                        <strong>${subgrupo}</strong><br>
+                        <span style="font-size: 0.9em;">${votosSubgrupo}/9 (${vagasRestantes} vagas)</span>
+                    `;
+                    btn.onclick = () => selecionarSubgrupo(subgrupo);
+                } else {
+                    btn.innerHTML = `
+                        <strong>${subgrupo}</strong><br>
+                        <span style="font-size: 0.9em; color: #e74c3c;">LOTADO (9/9)</span>
+                    `;
+                    btn.onclick = null;
+                }
 
                 subgroupOptions.appendChild(btn);
             }
 
             modal.style.display = 'block';
+            
+            // Debug: mostrar estatísticas no console
+            console.log(`Modal aberto para Grupo ${grupo}:`, {
+                grupo: votosGrupo,
+                subgrupos: estatisticas.subgrupos
+            });
         }
 
         function fecharModal() {
@@ -724,6 +769,7 @@
                 atualizarDisponibilidadeGrupos();
 
                 console.log('Estatísticas atualizadas:', estatisticas);
+                console.log('Subgrupos:', estatisticas.subgrupos);
             } catch (error) {
                 console.error('Erro ao carregar estatísticas:', error);
             }
