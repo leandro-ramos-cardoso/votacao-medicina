@@ -511,21 +511,26 @@
 
             // Verificar se já votou
             try {
-                const { data: inscricaoExistente, error } = await supabase
+                const { data: inscricoesExistentes, error } = await supabase
                     .from('inscricoes')
                     .select('*')
-                    .eq('nome', nome)
-                    .single();
+                    .eq('nome', nome);
 
-                if (inscricaoExistente) {
-                    mostrarErro('Você já realizou sua inscrição. Não é possível alterar o voto.');
+                if (error) {
+                    console.error('Erro ao verificar inscrição:', error);
+                    mostrarErro('Erro ao verificar inscrição. Tente novamente.');
+                    return;
+                }
+
+                if (inscricoesExistentes && inscricoesExistentes.length > 0) {
+                    const inscricao = inscricoesExistentes[0];
+                    mostrarErro(`Você já realizou sua inscrição no ${inscricao.subgrupo}. Não é possível alterar o voto.`);
                     return;
                 }
             } catch (error) {
-                // Erro 406 significa que não encontrou (não é erro real)
-                if (error.code !== 'PGRST116') {
-                    console.error('Erro ao verificar inscrição:', error);
-                }
+                console.error('Erro ao verificar inscrição:', error);
+                mostrarErro('Erro ao verificar inscrição. Tente novamente.');
+                return;
             }
 
             nomeAtual = nome;
@@ -643,6 +648,13 @@
             const votosGrupo = grupoSelecionado === 'A' ? estatisticas.grupoA : estatisticas.grupoB;
             if (votosGrupo >= 45) {
                 mostrarErro('Este grupo está lotado. Escolha outro grupo.');
+                return;
+            }
+
+            // Verificar se o usuário já está inscrito
+            const inscricaoExistente = inscricoes.find(i => i.nome === nomeAtual);
+            if (inscricaoExistente) {
+                mostrarErro('Você já realizou uma inscrição. Não é possível se inscrever novamente.');
                 return;
             }
 
