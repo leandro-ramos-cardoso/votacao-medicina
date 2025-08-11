@@ -222,11 +222,12 @@
             font-weight: 600;
             color: #2c3e50;
             text-align: center;
-            min-height: 80px;
+            min-height: 90px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            position: relative;
         }
 
         .subgroup-btn:hover {
@@ -360,22 +361,7 @@
             margin: 20px 0;
         }
 
-        .config-section {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-            border: 1px solid #e9ecef;
-        }
 
-        .config-input {
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-family: monospace;
-        }
     </style>
 </head>
 <body>
@@ -384,17 +370,7 @@
         <h2>Sistema de Inscrição</h2>
 
         <div class="info-box">
-            <strong>ℹ️ Sistema Centralizado:</strong> Dados salvos no banco de dados. Todas as inscrições são sincronizadas.
-        </div>
-
-        <!-- Configuração Supabase -->
-        <div class="config-section">
-            <h3>⚙️ Configuração do Banco de Dados</h3>
-            <p>Configure suas credenciais do Supabase:</p>
-            <input type="text" id="supabaseUrl" class="config-input" placeholder="URL do Supabase (ex: https://xyz.supabase.co)">
-            <input type="text" id="supabaseKey" class="config-input" placeholder="Chave anônima do Supabase">
-            <button class="btn" onclick="configurarSupabase()">🔧 Configurar</button>
-            <button class="btn btn-secondary" onclick="testarConexao()">🧪 Testar Conexão</button>
+            <strong>ℹ️ Sistema de Inscrição:</strong> Sistema centralizado com dados sincronizados em tempo real.
         </div>
 
         <!-- Etapa 1: Nome -->
@@ -478,89 +454,52 @@
         let estatisticas = { grupoA: 0, grupoB: 0, subgrupos: {} };
         let inscricoes = [];
 
-        // Inicialização
+                // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
-            // Carregar configuração salva
-            const savedUrl = localStorage.getItem('supabaseUrl');
-            const savedKey = localStorage.getItem('supabaseKey');
+            // Configurar Supabase com credenciais fixas
+            // IMPORTANTE: Substitua pelas suas credenciais do Supabase
+            const SUPABASE_URL = 'SUA_URL_DO_SUPABASE_AQUI';
+            const SUPABASE_KEY = 'SUA_CHAVE_ANONIMA_AQUI';
             
-            if (savedUrl && savedKey) {
-                document.getElementById('supabaseUrl').value = savedUrl;
-                document.getElementById('supabaseKey').value = savedKey;
-                configurarSupabase();
+            if (SUPABASE_URL && SUPABASE_KEY && SUPABASE_URL !== 'SUA_URL_DO_SUPABASE_AQUI') {
+                try {
+                    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                    console.log('Supabase configurado com sucesso');
+                    carregarEstatisticas();
+                } catch (error) {
+                    console.error('Erro ao configurar Supabase:', error);
+                    mostrarErro('Erro na configuração do banco de dados.');
+                }
+            } else {
+                console.warn('Configure as credenciais do Supabase no código');
+                mostrarErro('Sistema não configurado. Configure as credenciais do Supabase.');
             }
 
-                    // Atualizar estatísticas automaticamente a cada 15 segundos
+                    // Atualizar estatísticas automaticamente a cada 10 segundos
         setInterval(() => {
             if (supabase) {
                 carregarEstatisticas();
             }
-        }, 15000);
+        }, 10000);
 
-        // Atualizar estatísticas quando a página ganha foco
-        window.addEventListener('focus', () => {
-            if (supabase) {
-                carregarEstatisticas();
-            }
-        });
-
-        // Atualizar estatísticas quando o usuário volta para a aba
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden && supabase) {
-                carregarEstatisticas();
-            }
-        });
-        });
-
-        function configurarSupabase() {
-            const url = document.getElementById('supabaseUrl').value.trim();
-            const key = document.getElementById('supabaseKey').value.trim();
-
-            if (!url || !key) {
-                mostrarErro('Por favor, configure a URL e chave do Supabase.');
-                return;
-            }
-
-            try {
-                supabase = window.supabase.createClient(url, key);
-                
-                // Salvar configuração
-                localStorage.setItem('supabaseUrl', url);
-                localStorage.setItem('supabaseKey', key);
-                
-                mostrarSucesso('Supabase configurado com sucesso!');
-                carregarEstatisticas();
-            } catch (error) {
-                console.error('Erro ao configurar Supabase:', error);
-                mostrarErro('Erro ao configurar Supabase. Verifique as credenciais.');
-            }
-        }
-
-        async function testarConexao() {
-            if (!supabase) {
-                mostrarErro('Configure o Supabase primeiro.');
-                return;
-            }
-
-            try {
-                const { data, error } = await supabase
-                    .from('inscricoes')
-                    .select('count')
-                    .limit(1);
-
-                if (error) {
-                    mostrarErro('Erro de conexão: ' + error.message);
-                } else {
-                    mostrarSucesso('Conexão com Supabase funcionando!');
+            // Atualizar estatísticas quando a página ganha foco
+            window.addEventListener('focus', () => {
+                if (supabase) {
+                    carregarEstatisticas();
                 }
-            } catch (error) {
-                mostrarErro('Erro ao testar conexão: ' + error.message);
-            }
-        }
+            });
+
+            // Atualizar estatísticas quando o usuário volta para a aba
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden && supabase) {
+                    carregarEstatisticas();
+                }
+            });
+        });
 
         async function continuar() {
             if (!supabase) {
-                mostrarErro('Configure o Supabase primeiro.');
+                mostrarErro('Sistema não configurado. Configure as credenciais do Supabase.');
                 return;
             }
 
@@ -663,15 +602,15 @@
                 if (disponivel) {
                     btn.innerHTML = `
                         <strong>${subgrupo}</strong><br>
-                        <span style="font-size: 1.1em; color: #2c3e50;">${votosSubgrupo}/9</span><br>
-                        <small style="color: #27ae60;">${vagasRestantes} vagas</small>
+                        <span style="font-size: 1.2em; color: #2c3e50; font-weight: bold;">${votosSubgrupo}/9</span><br>
+                        <span style="font-size: 0.9em; color: #27ae60; font-weight: bold;">${vagasRestantes} vagas restantes</span>
                     `;
                     btn.onclick = () => selecionarSubgrupo(subgrupo);
                 } else {
                     btn.innerHTML = `
                         <strong>${subgrupo}</strong><br>
-                        <span style="font-size: 1.1em; color: #e74c3c;">9/9</span><br>
-                        <small style="color: #e74c3c;">LOTADO</small>
+                        <span style="font-size: 1.2em; color: #e74c3c; font-weight: bold;">9/9</span><br>
+                        <span style="font-size: 0.9em; color: #e74c3c; font-weight: bold;">LOTADO</span>
                     `;
                     btn.onclick = null;
                 }
@@ -680,18 +619,6 @@
             }
 
             modal.style.display = 'block';
-            
-            // Adicionar botão de teste para atualização manual
-            const testButton = document.createElement('button');
-            testButton.textContent = '🔄 Atualizar Contadores';
-            testButton.style.cssText = 'background: #667eea; color: white; border: none; padding: 10px; border-radius: 5px; margin-top: 10px; cursor: pointer;';
-            testButton.onclick = () => {
-                console.log('🔄 Atualização manual solicitada');
-                carregarEstatisticas().then(() => {
-                    abrirModalSubgrupos(grupo);
-                });
-            };
-            subgroupOptions.appendChild(testButton);
             
             // Debug: mostrar estatísticas no console
             console.log(`Modal aberto para Grupo ${grupo}:`, {
@@ -807,6 +734,13 @@
 
                 // Atualizar disponibilidade dos grupos
                 atualizarDisponibilidadeGrupos();
+
+                // Atualizar modal se estiver aberto
+                const modal = document.getElementById('modalSubgrupos');
+                if (modal.style.display === 'block') {
+                    console.log('🔄 Atualizando modal automaticamente...');
+                    abrirModalSubgrupos(grupoSelecionado);
+                }
 
                 console.log('Estatísticas atualizadas:', estatisticas);
                 console.log('Subgrupos:', estatisticas.subgrupos);
@@ -938,7 +872,7 @@
 
         async function exportarJSON() {
             if (!supabase) {
-                mostrarErro('Configure o Supabase primeiro.');
+                mostrarErro('Sistema não configurado. Configure as credenciais do Supabase.');
                 return;
             }
 
@@ -972,7 +906,7 @@
 
         async function exportarCSV() {
             if (!supabase) {
-                mostrarErro('Configure o Supabase primeiro.');
+                mostrarErro('Sistema não configurado. Configure as credenciais do Supabase.');
                 return;
             }
 

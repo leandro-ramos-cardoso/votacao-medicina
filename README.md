@@ -53,11 +53,10 @@ Sistema de inscrição para grupos de práticas de semiologia da turma de medici
 
 ## 🎯 Como Usar
 
-1. **Abra o sistema** no navegador
-2. **Digite o nome completo** do aluno
-3. **Escolha o grupo** (A ou B)
-4. **Selecione o subgrupo** (A1-A5 ou B1-B5)
-5. **Confirme a inscrição**
+1. **Configure o Supabase** seguindo o guia `CONFIGURACAO_RAPIDA.md`
+2. **Configure as credenciais** no arquivo `sistema-votacao-supabase.html`
+3. **Faça deploy** na Vercel
+4. **Use o sistema** normalmente
 
 ## 📊 Regras do Sistema
 
@@ -76,9 +75,9 @@ Sistema de inscrição para grupos de práticas de semiologia da turma de medici
 
 ## 💾 Armazenamento de Dados
 
-- **LocalStorage**: Dados salvos no navegador
+- **Supabase**: Dados salvos no banco de dados
 - **Exportação**: Backup em JSON e CSV
-- **Persistência**: Dados não se perdem ao fechar o navegador
+- **Sincronização**: Dados em tempo real para todos os usuários
 
 ## 🔧 Funcionalidades de Exportação
 
@@ -105,7 +104,7 @@ Sistema de inscrição para grupos de práticas de semiologia da turma de medici
 - **HTML5** - Estrutura
 - **CSS3** - Estilização e responsividade
 - **JavaScript** - Lógica e funcionalidades
-- **LocalStorage** - Armazenamento local
+- **Supabase** - Banco de dados
 - **Vercel** - Hospedagem
 
 ## 🔒 Segurança
