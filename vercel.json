@@ -7,10 +7,10 @@
       "use": "@vercel/static"
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "/sistema-votacao-medicina.html"
+      "source": "/(.*)",
+      "destination": "/sistema-votacao-medicina.html"
     }
   ],
   "headers": [
@@ -24,4 +24,4 @@
       ]
     }
   ]
-} 
+}
