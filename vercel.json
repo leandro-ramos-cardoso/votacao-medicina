@@ -3,14 +3,14 @@
   "name": "sistema-votacao-semiologia",
   "builds": [
     {
-      "src": "sistema-votacao-medicina.html",
+      "src": "sistema-votacao-supabase.html",
       "use": "@vercel/static"
     }
   ],
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/sistema-votacao-medicina.html"
+      "destination": "/sistema-votacao-supabase.html"
     }
   ],
   "headers": [

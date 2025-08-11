@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grupo de Práticas de Semiologia</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+
+        h2 {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 1.3em;
+            font-weight: 400;
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin: 10px;
+            min-width: 150px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .option-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .option-card:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
+        }
+
+        .option-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #ecf0f1;
+        }
+
+        .option-card.disabled:hover {
+            transform: none;
+            border-color: #e9ecef;
+            box-shadow: none;
+        }
+
+        .option-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .option-subtitle {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+
+        .close:hover {
+            color: #2c3e50;
+        }
+
+        .subgroup-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .subgroup-btn {
+            background: #ecf0f1;
+            border: 2px solid #bdc3c7;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .subgroup-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .subgroup-btn.disabled {
+            background: #bdc3c7;
+            color: #7f8c8d;
+            cursor: not-allowed;
+        }
+
+        .subgroup-btn.disabled:hover {
+            background: #bdc3c7;
+            color: #7f8c8d;
+            border-color: #bdc3c7;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .stats h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+
+        .stat-value {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .export-section {
+            background: #e3f2fd;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #bbdefb;
+        }
+
+        .export-section h3 {
+            color: #1976d2;
+            margin-bottom: 15px;
+        }
+
+        .export-btn {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+
+        .export-btn:hover {
+            background: #1976d2;
+        }
+
+        .info-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .config-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #e9ecef;
+        }
+
+        .config-input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Grupo de Práticas de Semiologia</h1>
+        <h2>Sistema de Inscrição</h2>
+
+        <div class="info-box">
+            <strong>ℹ️ Sistema Centralizado:</strong> Dados salvos no banco de dados. Todas as inscrições são sincronizadas.
+        </div>
+
+        <!-- Configuração Supabase -->
+        <div class="config-section">
+            <h3>⚙️ Configuração do Banco de Dados</h3>
+            <p>Configure suas credenciais do Supabase:</p>
+            <input type="text" id="supabaseUrl" class="config-input" placeholder="URL do Supabase (ex: https://xyz.supabase.co)">
+            <input type="text" id="supabaseKey" class="config-input" placeholder="Chave anônima do Supabase">
+            <button class="btn" onclick="configurarSupabase()">🔧 Configurar</button>
+            <button class="btn btn-secondary" onclick="testarConexao()">🧪 Testar Conexão</button>
+        </div>
+
+        <!-- Etapa 1: Nome -->
+        <div id="step1" class="step active">
+            <div class="form-group">
+                <label for="nome">Nome Completo *</label>
+                <input type="text" id="nome" placeholder="Digite seu nome completo" required>
+            </div>
+            <button class="btn" onclick="continuar()" type="button">Continuar</button>
+        </div>
+
+        <!-- Etapa 2: Escolha do Grupo -->
+        <div id="step2" class="step">
+            <h3 style="margin-bottom: 20px; color: #2c3e50;">Escolha seu grupo:</h3>
+            <div class="options-container">
+                <div class="option-card" onclick="selecionarGrupo('A')" id="grupoA">
+                    <div class="option-title">Grupo A</div>
+                    <div class="option-subtitle">Terças-feiras às 13h</div>
+                </div>
+                <div class="option-card" onclick="selecionarGrupo('B')" id="grupoB">
+                    <div class="option-title">Grupo B</div>
+                    <div class="option-subtitle">Sextas-feiras às 7h</div>
+                </div>
+            </div>
+            <button class="btn btn-secondary" onclick="voltar()">Voltar</button>
+        </div>
+
+        <!-- Modal para Subgrupos -->
+        <div id="modalSubgrupos" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="fecharModal()">&times;</span>
+                <h3 id="modalTitle" style="margin-bottom: 20px; color: #2c3e50;"></h3>
+                <div id="subgroupOptions" class="subgroup-options"></div>
+                <button class="btn btn-secondary" onclick="fecharModal()">Cancelar</button>
+            </div>
+        </div>
+
+        <!-- Mensagens -->
+        <div id="successMessage" class="success-message" style="display: none;"></div>
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+        <!-- Loading -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Enviando inscrição...</p>
+        </div>
+
+        <!-- Estatísticas -->
+        <div id="stats" class="stats" style="display: none;">
+            <h3>Estatísticas dos Grupos</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-label">Grupo A</div>
+                    <div class="stat-value" id="statsGrupoA">0/45</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Grupo B</div>
+                    <div class="stat-value" id="statsGrupoB">0/45</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção de Exportação -->
+        <div id="exportSection" class="export-section" style="display: block;">
+            <h3>📊 Exportar Dados</h3>
+            <p>Exporte os dados do banco de dados:</p>
+            <button class="export-btn" onclick="exportarJSON()">📄 Exportar JSON</button>
+            <button class="export-btn" onclick="exportarCSV()">📊 Exportar CSV</button>
+        </div>
+    </div>
+
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        // Estado da aplicação
+        let supabase = null;
+        let nomeAtual = '';
+        let grupoSelecionado = '';
+        let estatisticas = { grupoA: 0, grupoB: 0, subgrupos: {} };
+        let inscricoes = [];
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            // Carregar configuração salva
+            const savedUrl = localStorage.getItem('supabaseUrl');
+            const savedKey = localStorage.getItem('supabaseKey');
+            
+            if (savedUrl && savedKey) {
+                document.getElementById('supabaseUrl').value = savedUrl;
+                document.getElementById('supabaseKey').value = savedKey;
+                configurarSupabase();
+            }
+        });
+
+        function configurarSupabase() {
+            const url = document.getElementById('supabaseUrl').value.trim();
+            const key = document.getElementById('supabaseKey').value.trim();
+
+            if (!url || !key) {
+                mostrarErro('Por favor, configure a URL e chave do Supabase.');
+                return;
+            }
+
+            try {
+                supabase = window.supabase.createClient(url, key);
+                
+                // Salvar configuração
+                localStorage.setItem('supabaseUrl', url);
+                localStorage.setItem('supabaseKey', key);
+                
+                mostrarSucesso('Supabase configurado com sucesso!');
+                carregarEstatisticas();
+            } catch (error) {
+                console.error('Erro ao configurar Supabase:', error);
+                mostrarErro('Erro ao configurar Supabase. Verifique as credenciais.');
+            }
+        }
+
+        async function testarConexao() {
+            if (!supabase) {
+                mostrarErro('Configure o Supabase primeiro.');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('inscricoes')
+                    .select('count')
+                    .limit(1);
+
+                if (error) {
+                    mostrarErro('Erro de conexão: ' + error.message);
+                } else {
+                    mostrarSucesso('Conexão com Supabase funcionando!');
+                }
+            } catch (error) {
+                mostrarErro('Erro ao testar conexão: ' + error.message);
+            }
+        }
+
+        async function continuar() {
+            if (!supabase) {
+                mostrarErro('Configure o Supabase primeiro.');
+                return;
+            }
+
+            const nome = document.getElementById('nome').value.trim();
+            if (!nome) {
+                mostrarErro('Por favor, informe seu nome completo.');
+                return;
+            }
+
+            // Verificar se já votou
+            try {
+                const { data: inscricaoExistente, error } = await supabase
+                    .from('inscricoes')
+                    .select('*')
+                    .eq('nome', nome)
+                    .single();
+
+                if (inscricaoExistente) {
+                    mostrarErro('Você já realizou sua inscrição. Não é possível alterar o voto.');
+                    return;
+                }
+            } catch (error) {
+                // Erro 406 significa que não encontrou (não é erro real)
+                if (error.code !== 'PGRST116') {
+                    console.error('Erro ao verificar inscrição:', error);
+                }
+            }
+
+            nomeAtual = nome;
+            mostrarEtapa(2);
+            await carregarEstatisticas();
+            atualizarDisponibilidadeGrupos();
+        }
+
+        function voltar() {
+            mostrarEtapa(1);
+            document.getElementById('nome').value = '';
+            nomeAtual = '';
+        }
+
+        function mostrarEtapa(numero) {
+            document.querySelectorAll('.step').forEach(step => step.classList.remove('active'));
+            document.getElementById(`step${numero}`).classList.add('active');
+        }
+
+        function selecionarGrupo(grupo) {
+            const grupoElement = document.getElementById(`grupo${grupo}`);
+            if (grupoElement.classList.contains('disabled')) {
+                mostrarErro('Este grupo está lotado. Escolha outro grupo.');
+                return;
+            }
+
+            grupoSelecionado = grupo;
+            abrirModalSubgrupos(grupo);
+        }
+
+        function abrirModalSubgrupos(grupo) {
+            const modal = document.getElementById('modalSubgrupos');
+            const modalTitle = document.getElementById('modalTitle');
+            const subgroupOptions = document.getElementById('subgroupOptions');
+
+            modalTitle.textContent = `Escolha um subgrupo do Grupo ${grupo}`;
+            subgroupOptions.innerHTML = '';
+
+            for (let i = 1; i <= 5; i++) {
+                const subgrupo = `${grupo}${i}`;
+                const votosSubgrupo = estatisticas.subgrupos[subgrupo] || 0;
+                const disponivel = votosSubgrupo < 9;
+
+                const btn = document.createElement('button');
+                btn.className = `subgroup-btn ${disponivel ? '' : 'disabled'}`;
+                btn.textContent = `${subgrupo} (${votosSubgrupo}/9)`;
+                btn.onclick = disponivel ? () => selecionarSubgrupo(subgrupo) : null;
+
+                subgroupOptions.appendChild(btn);
+            }
+
+            modal.style.display = 'block';
+        }
+
+        function fecharModal() {
+            document.getElementById('modalSubgrupos').style.display = 'none';
+        }
+
+        async function selecionarSubgrupo(subgrupoSelecionado) {
+            const votosSubgrupo = estatisticas.subgrupos[subgrupoSelecionado] || 0;
+            if (votosSubgrupo >= 9) {
+                mostrarErro('Este subgrupo está lotado. Escolha outro.');
+                return;
+            }
+
+            // Mostrar loading
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+
+            try {
+                // Salvar no banco de dados
+                const { data, error } = await supabase
+                    .from('inscricoes')
+                    .insert([{
+                        nome: nomeAtual,
+                        grupo: grupoSelecionado,
+                        subgrupo: subgrupoSelecionado,
+                        data: new Date().toISOString()
+                    }])
+                    .select();
+
+                if (error) {
+                    if (error.code === '23505') {
+                        mostrarErro('Você já realizou uma inscrição.');
+                    } else {
+                        mostrarErro('Erro ao salvar inscrição: ' + error.message);
+                    }
+                } else {
+                    fecharModal();
+                    mostrarSucesso(subgrupoSelecionado);
+                    await carregarEstatisticas();
+                    atualizarDisponibilidadeGrupos();
+                }
+            } catch (error) {
+                console.error('Erro ao salvar:', error);
+                mostrarErro('Erro de conexão. Tente novamente.');
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        async function carregarEstatisticas() {
+            if (!supabase) return;
+
+            try {
+                const { data, error } = await supabase
+                    .from('inscricoes')
+                    .select('*')
+                    .order('timestamp', { ascending: false });
+
+                if (error) {
+                    console.error('Erro ao carregar estatísticas:', error);
+                    return;
+                }
+
+                inscricoes = data || [];
+
+                // Calcular estatísticas
+                estatisticas.grupoA = inscricoes.filter(i => i.grupo === 'A').length;
+                estatisticas.grupoB = inscricoes.filter(i => i.grupo === 'B').length;
+
+                // Estatísticas por subgrupo
+                estatisticas.subgrupos = {};
+                for (let i = 1; i <= 5; i++) {
+                    estatisticas.subgrupos[`A${i}`] = inscricoes.filter(i => i.subgrupo === `A${i}`).length;
+                    estatisticas.subgrupos[`B${i}`] = inscricoes.filter(i => i.subgrupo === `B${i}`).length;
+                }
+
+                document.getElementById('statsGrupoA').textContent = `${estatisticas.grupoA}/45`;
+                document.getElementById('statsGrupoB').textContent = `${estatisticas.grupoB}/45`;
+
+                document.getElementById('stats').style.display = 'block';
+            } catch (error) {
+                console.error('Erro ao carregar estatísticas:', error);
+            }
+        }
+
+        function atualizarDisponibilidadeGrupos() {
+            const grupoA = document.getElementById('grupoA');
+            const grupoB = document.getElementById('grupoB');
+
+            if (estatisticas.grupoA >= 45) {
+                grupoA.classList.add('disabled');
+            } else {
+                grupoA.classList.remove('disabled');
+            }
+
+            if (estatisticas.grupoB >= 45) {
+                grupoB.classList.add('disabled');
+            } else {
+                grupoB.classList.remove('disabled');
+            }
+        }
+
+        function mostrarSucesso(mensagem) {
+            const successMessage = document.getElementById('successMessage');
+            if (typeof mensagem === 'string') {
+                successMessage.innerHTML = `
+                    <h4>✅ ${mensagem}</h4>
+                `;
+            } else {
+                successMessage.innerHTML = `
+                    <h4>✅ Inscrição realizada com sucesso!</h4>
+                    <p><strong>Nome:</strong> ${nomeAtual}</p>
+                    <p><strong>Grupo:</strong> ${grupoSelecionado}</p>
+                    <p><strong>Subgrupo:</strong> ${mensagem}</p>
+                    <p>Sua inscrição foi registrada e não pode ser alterada.</p>
+                    <p><small>💾 Dados salvos no banco de dados</small></p>
+                `;
+            }
+            successMessage.style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+
+            // Limpar formulário
+            setTimeout(() => {
+                mostrarEtapa(1);
+                document.getElementById('nome').value = '';
+                successMessage.style.display = 'none';
+                nomeAtual = '';
+                grupoSelecionado = '';
+            }, 5000);
+        }
+
+        function mostrarErro(mensagem) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = mensagem;
+            errorMessage.style.display = 'block';
+            document.getElementById('successMessage').style.display = 'none';
+
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        async function exportarJSON() {
+            if (!supabase) {
+                mostrarErro('Configure o Supabase primeiro.');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('inscricoes')
+                    .select('*')
+                    .order('timestamp', { ascending: false });
+
+                if (error) {
+                    mostrarErro('Erro ao exportar: ' + error.message);
+                    return;
+                }
+
+                const dados = JSON.stringify(data, null, 2);
+                const blob = new Blob([dados], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `votacao-semiologia-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Erro ao exportar:', error);
+                mostrarErro('Erro ao exportar dados.');
+            }
+        }
+
+        async function exportarCSV() {
+            if (!supabase) {
+                mostrarErro('Configure o Supabase primeiro.');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('inscricoes')
+                    .select('*')
+                    .order('timestamp', { ascending: false });
+
+                if (error) {
+                    mostrarErro('Erro ao exportar: ' + error.message);
+                    return;
+                }
+
+                if (data.length === 0) {
+                    mostrarErro('Nenhum dado para exportar.');
+                    return;
+                }
+
+                let csv = 'Nome,Grupo,Subgrupo,Data\n';
+                
+                data.forEach(voto => {
+                    const dataFormatada = new Date(voto.data).toLocaleString('pt-BR');
+                    csv += `"${voto.nome}","${voto.grupo}","${voto.subgrupo}","${dataFormatada}"\n`;
+                });
+
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `votacao-semiologia-${new Date().toISOString().split('T')[0]}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Erro ao exportar:', error);
+                mostrarErro('Erro ao exportar dados.');
+            }
+        }
+
+        // Fechar modal ao clicar fora
+        window.onclick = function(event) {
+            const modal = document.getElementById('modalSubgrupos');
+            if (event.target === modal) {
+                fecharModal();
+            }
+        }
+
+        // Limpar mensagens de erro ao digitar
+        document.getElementById('nome').addEventListener('input', function() {
+            document.getElementById('errorMessage').style.display = 'none';
+        });
+    </script>
+</body>
+</html> 
