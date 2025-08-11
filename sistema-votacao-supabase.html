@@ -431,7 +431,7 @@
                     <div class="stat-value" id="statsGrupoB">0/45</div>
                 </div>
             </div>
-            <button class="btn btn-secondary" onclick="carregarEstatisticas()" style="margin-top: 10px;">🔄 Atualizar Estatísticas</button>
+
         </div>
 
         <!-- Seção de Exportação -->
@@ -461,7 +461,7 @@
             const SUPABASE_URL = 'https://qnudgptwmofwdckqdsoh.supabase.co';
             const SUPABASE_KEY = 'sb_publishable_vJMQbVYo3TEbni8bGuAMIA_kASPXUaS';
             
-            if (SUPABASE_URL && SUPABASE_KEY && SUPABASE_URL !== 'https://your-project.supabase.co') {
+            if (SUPABASE_URL && SUPABASE_KEY && SUPABASE_URL !== 'https://your-project.supabase.co' && SUPABASE_KEY !== 'your-anon-key') {
                 try {
                     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                     console.log('Supabase configurado com sucesso');
@@ -475,26 +475,26 @@
                 mostrarErro('Sistema não configurado. Configure as credenciais do Supabase.');
             }
 
-                    // Atualizar estatísticas automaticamente a cada 10 segundos
+                            // Atualizar estatísticas automaticamente a cada 3 segundos (como no teste)
         setInterval(() => {
             if (supabase) {
                 carregarEstatisticas();
             }
-        }, 10000);
+        }, 3000);
 
-            // Atualizar estatísticas quando a página ganha foco
-            window.addEventListener('focus', () => {
-                if (supabase) {
-                    carregarEstatisticas();
-                }
-            });
+        // Atualizar estatísticas quando a página ganha foco
+        window.addEventListener('focus', () => {
+            if (supabase) {
+                carregarEstatisticas();
+            }
+        });
 
-            // Atualizar estatísticas quando o usuário volta para a aba
-            document.addEventListener('visibilitychange', () => {
-                if (!document.hidden && supabase) {
-                    carregarEstatisticas();
-                }
-            });
+        // Atualizar estatísticas quando o usuário volta para a aba
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && supabase) {
+                carregarEstatisticas();
+            }
+        });
         });
 
         async function continuar() {
@@ -672,16 +672,13 @@
                     // Atualizar estatísticas ANTES de fechar o modal
                     await carregarEstatisticas();
                     
-                    // Atualizar modal se estiver aberto (ANTES de fechar)
+                    // Atualizar modal se estiver aberto (como no teste)
                     const modal = document.getElementById('modalSubgrupos');
                     if (modal.style.display === 'block') {
                         console.log('Atualizando modal após inscrição...');
-                        
-                        // Forçar recriação completa do modal
-                        abrirModalSubgrupos(grupoSelecionado);
-                        
-                        // Aguardar um pouco para ver a atualização
-                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        setTimeout(() => {
+                            abrirModalSubgrupos(grupoSelecionado);
+                        }, 100);
                     }
                     
                     fecharModal();
@@ -735,11 +732,13 @@
                 // Atualizar disponibilidade dos grupos
                 atualizarDisponibilidadeGrupos();
 
-                // Atualizar modal se estiver aberto
+                // Atualizar modal se estiver aberto (como no teste)
                 const modal = document.getElementById('modalSubgrupos');
-                if (modal.style.display === 'block') {
+                if (modal.style.display === 'block' && grupoSelecionado) {
                     console.log('🔄 Atualizando modal automaticamente...');
-                    abrirModalSubgrupos(grupoSelecionado);
+                    setTimeout(() => {
+                        abrirModalSubgrupos(grupoSelecionado);
+                    }, 100);
                 }
 
                 console.log('Estatísticas atualizadas:', estatisticas);
@@ -765,69 +764,7 @@
                 grupoB.classList.remove('disabled');
             }
 
-            // Atualizar modal se estiver aberto
-            const modal = document.getElementById('modalSubgrupos');
-            if (modal.style.display === 'block') {
-                atualizarContadoresModal();
-            }
-        }
 
-        function atualizarContadoresModal() {
-            console.log('🔧 Iniciando atualização do modal...');
-            console.log('Grupo selecionado:', grupoSelecionado);
-            console.log('Estatísticas atuais:', estatisticas);
-            
-            const subgroupOptions = document.getElementById('subgroupOptions');
-            const votosGrupo = grupoSelecionado === 'A' ? estatisticas.grupoA : estatisticas.grupoB;
-            
-            console.log('Votos do grupo:', votosGrupo);
-            
-            // Atualizar título
-            const modalTitle = document.getElementById('modalTitle');
-            modalTitle.textContent = `Escolha um subgrupo do Grupo ${grupoSelecionado} (${votosGrupo}/45)`;
-
-            // Atualizar informações do grupo
-            const grupoInfo = subgroupOptions.querySelector('div');
-            if (grupoInfo) {
-                grupoInfo.innerHTML = `
-                    <strong>Grupo ${grupoSelecionado}:</strong> ${votosGrupo}/45 inscrições 
-                    <br><small>${45 - votosGrupo} vagas restantes</small>
-                `;
-            }
-
-            // Atualizar contadores dos botões
-            const botoes = subgroupOptions.querySelectorAll('.subgroup-btn');
-            console.log('Encontrados', botoes.length, 'botões para atualizar');
-            
-            botoes.forEach((btn, index) => {
-                const i = index + 1;
-                const subgrupo = `${grupoSelecionado}${i}`;
-                const votosSubgrupo = estatisticas.subgrupos[subgrupo] || 0;
-                const disponivel = votosSubgrupo < 9;
-                const vagasRestantes = 9 - votosSubgrupo;
-
-                console.log(`🔄 Atualizando botão ${subgrupo}: ${votosSubgrupo}/9 (${vagasRestantes} vagas)`);
-
-                if (disponivel) {
-                    btn.innerHTML = `
-                        <strong>${subgrupo}</strong><br>
-                        <span style="font-size: 1.1em; color: #2c3e50;">${votosSubgrupo}/9</span><br>
-                        <small style="color: #27ae60;">${vagasRestantes} vagas</small>
-                    `;
-                    btn.className = 'subgroup-btn';
-                    btn.onclick = () => selecionarSubgrupo(subgrupo);
-                } else {
-                    btn.innerHTML = `
-                        <strong>${subgrupo}</strong><br>
-                        <span style="font-size: 1.1em; color: #e74c3c;">9/9</span><br>
-                        <small style="color: #e74c3c;">LOTADO</small>
-                    `;
-                    btn.className = 'subgroup-btn disabled';
-                    btn.onclick = null;
-                }
-            });
-            
-            console.log('✅ Atualização do modal concluída');
         }
 
         function mostrarSucesso(mensagem) {
