@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "name": "sistema-votacao-semiologia",
+  "builds": [
+    {
+      "src": "sistema-votacao-medicina.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/sistema-votacao-medicina.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    }
+  ]
+} 
