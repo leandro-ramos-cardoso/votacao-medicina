@@ -12,7 +12,7 @@ Criei uma versão que funciona **sem APIs complexas**, usando Supabase diretamen
 3. **Nome**: `sistema-votacao-semiologia`
 
 ### 2. Criar Tabela
-1. **Vá em "Table Editor"**
+1. **Vá em "Table Editor"**a
 2. **Clique em "New Table"**
 3. **Nome**: `inscricoes`
 4. **Colunas**:
