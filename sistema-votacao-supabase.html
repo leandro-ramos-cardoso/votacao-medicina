@@ -600,7 +600,7 @@
                 const disponivel = votosSubgrupo < 9;
                 const vagasRestantes = 9 - votosSubgrupo;
 
-                console.log(`Criando botão ${subgrupo}: ${votosSubgrupo}/9`);
+                console.log(`Criando botão ${subgrupo}: ${votosSubgrupo}/9 (disponível: ${disponivel}, vagas: ${vagasRestantes})`);
 
                 const btn = document.createElement('button');
                 btn.className = `subgroup-btn ${disponivel ? '' : 'disabled'}`;
@@ -611,7 +611,10 @@
                         <span style="font-size: 1.2em; color: #2c3e50; font-weight: bold;">${votosSubgrupo}/9</span><br>
                         <span style="font-size: 0.9em; color: #27ae60; font-weight: bold;">${vagasRestantes} vagas restantes</span>
                     `;
-                    btn.onclick = () => selecionarSubgrupo(subgrupo);
+                    btn.onclick = () => {
+                        console.log(`🎯 Tentando selecionar ${subgrupo} (${votosSubgrupo}/9)`);
+                        selecionarSubgrupo(subgrupo);
+                    };
                 } else {
                     btn.innerHTML = `
                         <strong>${subgrupo}</strong><br>
@@ -619,6 +622,7 @@
                         <span style="font-size: 0.9em; color: #e74c3c; font-weight: bold;">LOTADO</span>
                     `;
                     btn.onclick = null;
+                    console.log(`❌ ${subgrupo} está LOTADO (${votosSubgrupo}/9)`);
                 }
 
                 subgroupOptions.appendChild(btn);
@@ -638,12 +642,19 @@
         }
 
         async function selecionarSubgrupo(subgrupoSelecionado) {
+            console.log(`🔍 Verificando ${subgrupoSelecionado} antes de salvar...`);
+            
             // Verificar limite ANTES de salvar
             const votosSubgrupo = estatisticas.subgrupos[subgrupoSelecionado] || 0;
+            console.log(`📊 ${subgrupoSelecionado}: ${votosSubgrupo}/9 votos`);
+            
             if (votosSubgrupo >= 9) {
+                console.log(`❌ ${subgrupoSelecionado} está LOTADO! Bloqueando inscrição.`);
                 mostrarErro('Este subgrupo está lotado. Escolha outro.');
                 return;
             }
+            
+            console.log(`✅ ${subgrupoSelecionado} está disponível. Prosseguindo...`);
 
             // Verificar limite do grupo
             const votosGrupo = grupoSelecionado === 'A' ? estatisticas.grupoA : estatisticas.grupoB;
@@ -837,7 +848,11 @@
                         <small style="color: #27ae60;">${vagasRestantes} vagas</small>
                     `;
                     btn.className = 'subgroup-btn';
-                    btn.onclick = () => selecionarSubgrupo(subgrupo);
+                    btn.onclick = () => {
+                        console.log(`🎯 Tentando selecionar ${subgrupo} via atualização (${votosSubgrupo}/9)`);
+                        selecionarSubgrupo(subgrupo);
+                    };
+                    console.log(`✅ ${subgrupo} está disponível (${votosSubgrupo}/9)`);
                 } else {
                     btn.innerHTML = `
                         <strong>${subgrupo}</strong><br>
@@ -846,6 +861,7 @@
                     `;
                     btn.className = 'subgroup-btn disabled';
                     btn.onclick = null;
+                    console.log(`❌ ${subgrupo} está LOTADO via atualização (${votosSubgrupo}/9)`);
                 }
             });
             
