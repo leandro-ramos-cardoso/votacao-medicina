@@ -718,5 +718,27 @@
             document.getElementById('errorMessage').style.display = 'none';
         });
     </script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script>
+  const supabase = supabase.createClient(
+    'https://YOUR-PROJECT.supabase.co',
+    'PUBLIC_ANON_KEY'
+  );
+
+  async function salvarInscricao(nome, grupo, subgrupo) {
+    const { data, error } = await supabase
+      .from('inscricoes')
+      .insert([{ nome, grupo, subgrupo, data: new Date().toISOString() }]);
+    
+    if (error) {
+      console.error(error);
+      alert("Erro ao salvar");
+    } else {
+      alert("Inscrição salva!");
+    }
+  }
+</script>
+
 </body>
 </html> 
