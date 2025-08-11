@@ -490,16 +490,23 @@
                 configurarSupabase();
             }
 
-                    // Atualizar estatísticas automaticamente a cada 30 segundos
+                    // Atualizar estatísticas automaticamente a cada 15 segundos
         setInterval(() => {
             if (supabase) {
                 carregarEstatisticas();
             }
-        }, 30000);
+        }, 15000);
 
         // Atualizar estatísticas quando a página ganha foco
         window.addEventListener('focus', () => {
             if (supabase) {
+                carregarEstatisticas();
+            }
+        });
+
+        // Atualizar estatísticas quando o usuário volta para a aba
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && supabase) {
                 carregarEstatisticas();
             }
         });
@@ -725,7 +732,17 @@
                 } else {
                     fecharModal();
                     mostrarSucesso(subgrupoSelecionado);
+                    
+                    // Atualizar estatísticas imediatamente
                     await carregarEstatisticas();
+                    
+                    // Forçar atualização do modal se estiver aberto
+                    const modal = document.getElementById('modalSubgrupos');
+                    if (modal.style.display === 'block') {
+                        console.log('Atualizando modal após inscrição...');
+                        atualizarContadoresModal();
+                    }
+                    
                     atualizarDisponibilidadeGrupos();
                 }
             } catch (error) {
@@ -801,8 +818,56 @@
             // Atualizar modal se estiver aberto
             const modal = document.getElementById('modalSubgrupos');
             if (modal.style.display === 'block') {
-                abrirModalSubgrupos(grupoSelecionado);
+                atualizarContadoresModal();
             }
+        }
+
+        function atualizarContadoresModal() {
+            const subgroupOptions = document.getElementById('subgroupOptions');
+            const votosGrupo = grupoSelecionado === 'A' ? estatisticas.grupoA : estatisticas.grupoB;
+            
+            // Atualizar título
+            const modalTitle = document.getElementById('modalTitle');
+            modalTitle.textContent = `Escolha um subgrupo do Grupo ${grupoSelecionado} (${votosGrupo}/45)`;
+
+            // Atualizar informações do grupo
+            const grupoInfo = subgroupOptions.querySelector('div');
+            if (grupoInfo) {
+                grupoInfo.innerHTML = `
+                    <strong>Grupo ${grupoSelecionado}:</strong> ${votosGrupo}/45 inscrições 
+                    <br><small>${45 - votosGrupo} vagas restantes</small>
+                `;
+            }
+
+            // Atualizar contadores dos botões
+            const botoes = subgroupOptions.querySelectorAll('.subgroup-btn');
+            botoes.forEach((btn, index) => {
+                const i = index + 1;
+                const subgrupo = `${grupoSelecionado}${i}`;
+                const votosSubgrupo = estatisticas.subgrupos[subgrupo] || 0;
+                const disponivel = votosSubgrupo < 9;
+                const vagasRestantes = 9 - votosSubgrupo;
+
+                console.log(`Atualizando botão ${subgrupo}: ${votosSubgrupo}/9`);
+
+                if (disponivel) {
+                    btn.innerHTML = `
+                        <strong>${subgrupo}</strong><br>
+                        <span style="font-size: 1.1em; color: #2c3e50;">${votosSubgrupo}/9</span><br>
+                        <small style="color: #27ae60;">${vagasRestantes} vagas</small>
+                    `;
+                    btn.className = 'subgroup-btn';
+                    btn.onclick = () => selecionarSubgrupo(subgrupo);
+                } else {
+                    btn.innerHTML = `
+                        <strong>${subgrupo}</strong><br>
+                        <span style="font-size: 1.1em; color: #e74c3c;">9/9</span><br>
+                        <small style="color: #e74c3c;">LOTADO</small>
+                    `;
+                    btn.className = 'subgroup-btn disabled';
+                    btn.onclick = null;
+                }
+            });
         }
 
         function mostrarSucesso(mensagem) {
