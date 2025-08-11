@@ -361,7 +361,7 @@
         <h2>Sistema de Inscrição</h2>
 
         <div class="info-box">
-            <strong>ℹ️ Sistema Local:</strong> Dados salvos no navegador. Use os botões de exportação para backup.
+            <strong>ℹ️ Sistema Centralizado:</strong> Dados salvos no banco de dados. Todas as inscrições são sincronizadas.
         </div>
 
         <!-- Etapa 1: Nome -->
@@ -425,47 +425,58 @@
         </div>
 
         <!-- Seção de Exportação -->
-        <div id="exportSection" class="export-section" style="display: none;">
+        <div id="exportSection" class="export-section" style="display: block;">
             <h3>📊 Exportar Dados</h3>
-            <p>Exporte os dados salvos para backup ou análise:</p>
+            <p>Exporte os dados do banco de dados:</p>
             <button class="export-btn" onclick="exportarJSON()">📄 Exportar JSON</button>
             <button class="export-btn" onclick="exportarCSV()">📊 Exportar CSV</button>
-            <button class="export-btn" onclick="limparDados()">🗑️ Limpar Todos os Dados</button>
         </div>
     </div>
 
     <script>
-        // Sistema funcionando localmente - pronto para Vercel
-        const SISTEMA_MODO = 'local';
+        // Sistema centralizado com banco de dados
+        const API_BASE_URL = window.location.origin;
+        const API_SALVAR = `${API_BASE_URL}/api/salvar-inscricao`;
+        const API_ESTATISTICAS = `${API_BASE_URL}/api/estatisticas`;
         
         // Estado da aplicação
-        let votos = JSON.parse(localStorage.getItem('votos')) || {};
+        let votos = {};
         let nomeAtual = '';
         let grupoSelecionado = '';
+        let estatisticas = { grupoA: 0, grupoB: 0, subgrupos: {} };
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
             carregarEstatisticas();
-            mostrarSecaoExportacao();
         });
 
-        function continuar() {
+        async function continuar() {
             const nome = document.getElementById('nome').value.trim();
             if (!nome) {
                 mostrarErro('Por favor, informe seu nome completo.');
                 return;
             }
 
-            // Verificar se já votou
-            if (votos[nome]) {
-                mostrarErro('Você já realizou sua inscrição. Não é possível alterar o voto.');
-                return;
+            // Verificar se já votou (buscar no banco)
+            try {
+                const response = await fetch(API_ESTATISTICAS);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const inscricaoExistente = data.inscricoes.find(i => i.nome === nome);
+                    if (inscricaoExistente) {
+                        mostrarErro('Você já realizou sua inscrição. Não é possível alterar o voto.');
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao verificar inscrição:', error);
             }
 
             nomeAtual = nome;
             mostrarEtapa(2);
+            await carregarEstatisticas();
             atualizarDisponibilidadeGrupos();
-            console.log('Função continuar executada com sucesso');
         }
 
         function voltar() {
@@ -500,7 +511,7 @@
 
             for (let i = 1; i <= 5; i++) {
                 const subgrupo = `${grupo}${i}`;
-                const votosSubgrupo = contarVotosSubgrupo(subgrupo);
+                const votosSubgrupo = estatisticas.subgrupos[subgrupo] || 0;
                 const disponivel = votosSubgrupo < 9;
 
                 const btn = document.createElement('button');
@@ -518,128 +529,143 @@
             document.getElementById('modalSubgrupos').style.display = 'none';
         }
 
-        function selecionarSubgrupo(subgrupo) {
-            const votosSubgrupo = contarVotosSubgrupo(subgrupo);
+        async function selecionarSubgrupo(subgrupo) {
+            const votosSubgrupo = estatisticas.subgrupos[subgrupo] || 0;
             if (votosSubgrupo >= 9) {
                 mostrarErro('Este subgrupo está lotado. Escolha outro.');
                 return;
             }
 
-            // Registrar voto
-            votos[nomeAtual] = {
-                nome: nomeAtual,
-                grupo: grupoSelecionado,
-                subgrupo: subgrupo,
-                data: new Date().toISOString()
-            };
+            // Mostrar loading
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
 
-            // Salvar no localStorage
-            localStorage.setItem('votos', JSON.stringify(votos));
+            try {
+                // Salvar no banco de dados
+                const response = await fetch(API_SALVAR, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        nome: nomeAtual,
+                        grupo: grupoSelecionado,
+                        subgrupo: subgrupo,
+                        data: new Date().toISOString()
+                    })
+                });
 
-            fecharModal();
-            mostrarSucesso();
+                const data = await response.json();
+
+                if (data.success) {
+                    fecharModal();
+                    mostrarSucesso();
+                    await carregarEstatisticas();
+                    atualizarDisponibilidadeGrupos();
+                } else {
+                    mostrarErro(data.error || 'Erro ao salvar inscrição');
+                }
+            } catch (error) {
+                console.error('Erro ao salvar:', error);
+                mostrarErro('Erro de conexão. Tente novamente.');
+            } finally {
+                loading.style.display = 'none';
+            }
         }
 
-        function contarVotosSubgrupo(subgrupo) {
-            return Object.values(votos).filter(voto => voto.subgrupo === subgrupo).length;
-        }
 
-        function contarVotosGrupo(grupo) {
-            return Object.values(votos).filter(voto => voto.grupo === grupo).length;
-        }
 
         function atualizarDisponibilidadeGrupos() {
-            const votosGrupoA = contarVotosGrupo('A');
-            const votosGrupoB = contarVotosGrupo('B');
-
             const grupoA = document.getElementById('grupoA');
             const grupoB = document.getElementById('grupoB');
 
-            if (votosGrupoA >= 45) {
+            if (estatisticas.grupoA >= 45) {
                 grupoA.classList.add('disabled');
             } else {
                 grupoA.classList.remove('disabled');
             }
 
-            if (votosGrupoB >= 45) {
+            if (estatisticas.grupoB >= 45) {
                 grupoB.classList.add('disabled');
             } else {
                 grupoB.classList.remove('disabled');
             }
         }
 
-        function carregarEstatisticas() {
-            const votosGrupoA = contarVotosGrupo('A');
-            const votosGrupoB = contarVotosGrupo('B');
+        async function carregarEstatisticas() {
+            try {
+                const response = await fetch(API_ESTATISTICAS);
+                const data = await response.json();
 
-            document.getElementById('statsGrupoA').textContent = `${votosGrupoA}/45`;
-            document.getElementById('statsGrupoB').textContent = `${votosGrupoB}/45`;
+                if (data.success) {
+                    estatisticas = data.estatisticas;
+                    votos = data.inscricoes;
 
-            document.getElementById('stats').style.display = 'block';
-        }
+                    document.getElementById('statsGrupoA').textContent = `${estatisticas.grupoA}/45`;
+                    document.getElementById('statsGrupoB').textContent = `${estatisticas.grupoB}/45`;
 
-        function mostrarSecaoExportacao() {
-            if (Object.keys(votos).length > 0) {
-                document.getElementById('exportSection').style.display = 'block';
+                    document.getElementById('stats').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Erro ao carregar estatísticas:', error);
             }
         }
 
-        function verificarVotoExistente() {
-            const nome = document.getElementById('nome').value.trim();
-            if (nome && votos[nome]) {
-                mostrarErro('Você já realizou sua inscrição. Não é possível alterar o voto.');
-                return true; // Indica que já votou
+
+
+        async function exportarJSON() {
+            try {
+                const response = await fetch(API_ESTATISTICAS);
+                const data = await response.json();
+
+                if (data.success) {
+                    const dados = JSON.stringify(data.inscricoes, null, 2);
+                    const blob = new Blob([dados], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `votacao-semiologia-${new Date().toISOString().split('T')[0]}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }
+            } catch (error) {
+                console.error('Erro ao exportar:', error);
+                alert('Erro ao exportar dados. Tente novamente.');
             }
-            return false; // Indica que não votou ainda
         }
 
-        function exportarJSON() {
-            const dados = JSON.stringify(votos, null, 2);
-            const blob = new Blob([dados], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `votacao-semiologia-${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
+        async function exportarCSV() {
+            try {
+                const response = await fetch(API_ESTATISTICAS);
+                const data = await response.json();
 
-        function exportarCSV() {
-            if (Object.keys(votos).length === 0) {
-                alert('Nenhum dado para exportar.');
-                return;
-            }
+                if (data.success && data.inscricoes.length > 0) {
+                    let csv = 'Nome,Grupo,Subgrupo,Data\n';
+                    
+                    data.inscricoes.forEach(voto => {
+                        const dataFormatada = new Date(voto.data).toLocaleString('pt-BR');
+                        csv += `"${voto.nome}","${voto.grupo}","${voto.subgrupo}","${dataFormatada}"\n`;
+                    });
 
-            let csv = 'Nome,Grupo,Subgrupo,Data\n';
-            
-            Object.values(votos).forEach(voto => {
-                const data = new Date(voto.data).toLocaleString('pt-BR');
-                csv += `"${voto.nome}","${voto.grupo}","${voto.subgrupo}","${data}"\n`;
-            });
-
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `votacao-semiologia-${new Date().toISOString().split('T')[0]}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        function limparDados() {
-            if (confirm('Tem certeza que deseja limpar TODOS os dados? Esta ação não pode ser desfeita!')) {
-                localStorage.removeItem('votos');
-                votos = {};
-                alert('Todos os dados foram removidos.');
-                carregarEstatisticas();
-                atualizarDisponibilidadeGrupos();
-                document.getElementById('exportSection').style.display = 'none';
+                    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `votacao-semiologia-${new Date().toISOString().split('T')[0]}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                } else {
+                    alert('Nenhum dado para exportar.');
+                }
+            } catch (error) {
+                console.error('Erro ao exportar:', error);
+                alert('Erro ao exportar dados. Tente novamente.');
             }
         }
 
@@ -651,17 +677,12 @@
                 <h4>✅ Inscrição realizada com sucesso!</h4>
                 <p><strong>Nome:</strong> ${nomeAtual}</p>
                 <p><strong>Grupo:</strong> ${grupoSelecionado}</p>
-                <p><strong>Subgrupo:</strong> ${votos[nomeAtual].subgrupo}</p>
+                <p><strong>Subgrupo:</strong> ${grupoSelecionado}${subgrupo}</p>
                 <p>Sua inscrição foi registrada e não pode ser alterada.</p>
-                <p><small>💾 Dados salvos localmente no navegador</small></p>
+                <p><small>💾 Dados salvos no banco de dados</small></p>
             `;
             successMessage.style.display = 'block';
             document.getElementById('errorMessage').style.display = 'none';
-
-            // Atualizar estatísticas
-            carregarEstatisticas();
-            atualizarDisponibilidadeGrupos();
-            mostrarSecaoExportacao();
 
             // Limpar formulário
             setTimeout(() => {
@@ -692,14 +713,9 @@
             }
         }
 
-        // Verificar voto existente ao digitar nome
+        // Limpar mensagens de erro ao digitar
         document.getElementById('nome').addEventListener('input', function() {
-            const nome = document.getElementById('nome').value.trim();
-            if (nome && votos[nome]) {
-                mostrarErro('Você já realizou sua inscrição. Não é possível alterar o voto.');
-            } else {
-                document.getElementById('errorMessage').style.display = 'none';
-            }
+            document.getElementById('errorMessage').style.display = 'none';
         });
     </script>
 </body>

@@ -1,0 +1,25 @@
+{
+  "name": "sistema-votacao-semiologia",
+  "version": "1.0.0",
+  "description": "Sistema de inscrição para grupos de práticas de semiologia",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step required'",
+    "start": "vercel dev"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.38.0"
+  },
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  },
+  "keywords": [
+    "votacao",
+    "semiologia",
+    "medicina",
+    "inscricao"
+  ],
+  "author": "Sistema de Votação Semiologia",
+  "license": "MIT"
+} 
